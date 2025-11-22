@@ -1,6 +1,14 @@
 {
 	"version": "0.1.0",
 	"configurations": [
+		
+		{
+			"name": "Attach to Process",
+			"type": "go",
+			"request": "attach",
+			"mode": "local",
+			"processId": 0
+		},
 		{
 			"type": "node",
 			"request": "launch",
