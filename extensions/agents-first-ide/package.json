@@ -1,0 +1,89 @@
+{
+	"name": "agents-first-ide",
+	"displayName": "Agents First IDE",
+	"description": "Native OpenAI Agents SDK integration for VS Code",
+	"version": "0.0.1",
+	"publisher": "vscode-agents",
+	"engines": {
+		"vscode": "^1.90.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "agents-first-ide-sidebar",
+					"title": "Agent Studio",
+					"icon": "resources/icon.png"
+				}
+			]
+		},
+		"views": {
+			"agents-first-ide-sidebar": [
+				{
+					"type": "webview",
+					"id": "copilot-chat",
+					"name": "Copilot Chat"
+				},
+				{
+					"type": "webview",
+					"id": "agents-manager",
+					"name": "Agents Manager"
+				},
+				{
+					"type": "webview",
+					"id": "observability",
+					"name": "Observability"
+				},
+				{
+					"type": "webview",
+					"id": "project-intelligence",
+					"name": "Project Intelligence"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "agents-first.createAgent",
+				"title": "Create New Agent"
+			},
+			{
+				"command": "agents-first.openCopilot",
+				"title": "Open Copilot"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"lint": "eslint src --ext ts",
+		"generate:prisma": "npx prisma generate"
+	},
+	"dependencies": {
+		"@prisma/client": "^5.10.0",
+		"@types/diff": "^7.0.2",
+		"diff": "^8.0.2",
+		"openai": "^4.28.0",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"uuid": "^9.0.0",
+		"zod": "^3.22.0"
+	},
+	"devDependencies": {
+		"@types/node": "^18.0.0",
+		"@types/react": "^18.2.0",
+		"@types/react-dom": "^18.2.0",
+		"@types/uuid": "^9.0.0",
+		"@types/vscode": "^1.90.0",
+		"eslint": "^8.50.0",
+		"prisma": "^5.10.0",
+		"typescript": "^5.3.0"
+	}
+}

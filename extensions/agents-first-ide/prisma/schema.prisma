@@ -1,0 +1,124 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./agents.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// --- AGENT REGISTRY ---
+
+model Agent {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  role         String   // e.g., "architect", "implementer"
+  model        String   @default("gpt-4-turbo")
+  instructions String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions     Session[]
+  tools        AgentTool[]
+  runs         Run[]
+
+  @@index([name])
+}
+
+model AgentTool {
+  id        String   @id @default(uuid())
+  agentId   String
+  toolName  String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, toolName])
+  @@index([agentId])
+}
+
+// --- EXECUTION STATE ---
+
+model Session {
+  id        String   @id @default(uuid())
+  title     String?
+  agentId   String?  // Current active agent for the session
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activeAgent Agent?    @relation(fields: [agentId], references: [id])
+  messages    Message[]
+  runs        Run[]
+
+  @@index([agentId])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  sessionId String
+  role      String   // "user", "assistant", "system", "tool"
+  content   String
+  createdAt DateTime @default(now())
+
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+model Run {
+  id          String   @id @default(uuid())
+  sessionId   String
+  agentId     String
+  status      String   // "queued", "in_progress", "completed", "failed"
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  tokensUsed  Int      @default(0)
+  cost        Float    @default(0.0)
+  error       String?
+
+  session     Session    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  agent       Agent      @relation(fields: [agentId], references: [id])
+  toolCalls   ToolCall[]
+  logs        RunLog[]
+
+  @@index([sessionId])
+  @@index([agentId])
+}
+
+model ToolCall {
+  id        String   @id @default(uuid())
+  runId     String
+  toolName  String
+  input     String   // JSON string
+  output    String?  // JSON string
+  status    String   // "pending", "success", "error"
+  createdAt DateTime @default(now())
+  durationMs Int?
+
+  run       Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model RunLog {
+  id        String   @id @default(uuid())
+  runId     String
+  level     String   // "info", "warn", "error"
+  message   String
+  metadata  String?  // JSON string
+  createdAt DateTime @default(now())
+
+  run       Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+// --- CONFIGURATION ---
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
